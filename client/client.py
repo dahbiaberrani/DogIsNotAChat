@@ -1,32 +1,58 @@
 import socket
+import sys
 import threading
 
-username = input("Choisir un username: ")
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(("127.0.0.1",4000))
+# Choosing Nickname
 
+nickname = input("Choose your nickname: ")
+
+# Connecting To Server
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('127.0.0.1', 8080))
+
+
+# Listening to Server and Sending Nickname
 def receive():
     while True:
         try:
-            # Recevoir les messages du serveur
+            # Receive Message From Server
+            # If 'NICK' Send Nickname
             message = client.recv(1024).decode('ascii')
             if message == 'NICK':
-                client.send(username.encode('ascii'))
+                client.send(nickname.encode('ascii'))
             else:
                 print(message)
         except:
             # Close Connection When Error
-            print("ERROR!")
+            print("An error occured!")
             client.close()
             break
 
-# Envoyer un message au serveur
+
+# Sending Messages To Server
 def write():
     while True:
-        message = '{}: {}'.format(username, input(''))
-        client.send(message.encode('ascii'))
+        m = input('').upper()
+        if m == "/QUIT":
+            quit()
+        elif m == "/LIST":
+            list()
+        else:
+            message = '{}: {}'.format(nickname, m)
+            client.send(message.encode('ascii'))
 
-# Creation des thread pour l'attente et l'envoie de messages
+
+def quit():
+    client.close()
+    sys.exit()
+
+
+def list():
+    client.send("list")
+    liste = client.recv(1024)
+
+
+# Starting Threads For Listening And Writing
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
