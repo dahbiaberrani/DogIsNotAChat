@@ -1,7 +1,7 @@
 import socket
 import threading
+cmd1 = "NICK"
 #creaction de la socket
-
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #Lisaison de la socket à un port d'écoute avec bind()
@@ -19,11 +19,12 @@ def broadcast(message):
         client.send(message)
 
 
-
 def handle(client):
     while True:
         try:
             msg = client.recv(1024)
+            # verification du prtocol RFC
+
             broadcast(msg)
         except:
             index = clients.index(client)
@@ -42,10 +43,18 @@ def receive():
         print("Connected with {}".format(str(address)))
 
         # Request And Store Nickname
-        client.send('NICK'.encode('ascii'))
+        client.send(cmd1.encode('ascii'))
         username = client.recv(1024).decode('ascii')
-        usernames.append(username)
-        clients.append(client)
+        if username not in usernames:
+            usernames.append(username)
+            print("utilisateur accepter")
+            print(clients)
+            clients.append(client)
+        else:
+            print("user name already in use")
+
+
+
 
         # Print And Broadcast Nickname
         print("Nickname is {}".format(username))
