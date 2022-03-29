@@ -2,6 +2,7 @@ import socket
 import sys
 import threading
 
+
 # Choosing Nickname
 
 nickname = input("Choose your nickname: ")
@@ -18,6 +19,7 @@ def receive():
             # Receive Message From Server
             # If 'NICK' Send Nickname
             message = client.recv(1024).decode('ascii')
+
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
             else:
@@ -27,6 +29,7 @@ def receive():
             print("An error occured!")
             client.close()
             break
+
 
 
 # Sending Messages To Server
@@ -50,6 +53,7 @@ def quit():
 def list():
     client.send("list")
     liste = client.recv(1024)
+
 
 
 # Starting Threads For Listening And Writing
