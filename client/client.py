@@ -2,7 +2,6 @@ import socket
 import sys
 import threading
 
-
 # Choosing Nickname
 
 nickname = input("Choose your nickname: ")
@@ -31,7 +30,6 @@ def receive():
             break
 
 
-
 # Sending Messages To Server
 def write():
     while True:
@@ -53,7 +51,6 @@ def quit():
 def list():
     client.send("list")
     liste = client.recv(1024)
-
 
 
 # Starting Threads For Listening And Writing
