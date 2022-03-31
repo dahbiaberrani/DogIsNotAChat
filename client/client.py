@@ -18,7 +18,6 @@ def receive():
             # Receive Message From Server
             # If 'NICK' Send Nickname
             message = client.recv(1024).decode('ascii')
-
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
             else:
@@ -33,9 +32,16 @@ def receive():
 # Sending Messages To Server
 def write():
     while True:
-        m = input('').upper()
+        m = input('')
+        liste_user_message = m.split(' ')
+        print(liste_user_message)
+
         if m == "/QUIT":
             quit()
+        elif m == "/HELP":  # Partie Dahbia
+            help()
+        elif liste_user_message[0].upper() == "/SENDFILE":  # Partie Dahbia
+            send_file(m)
         elif m == "/LIST":
             list()
         else:
@@ -59,3 +65,17 @@ receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
+
+
+######################################################################################################
+##Partie Dahbia
+#######################################################################################################
+
+def help():
+    client.send('/HELP'.encode('ascii'))
+
+
+def send_file(message):
+    client.send(message.encode('ascii'))
+
+################################# fin partie dahbia
