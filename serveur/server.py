@@ -1,11 +1,9 @@
 import socket
 import threading
 
-
 # Connection Data
 host = '127.0.0.1'
 port = 8080
-
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,7 +21,6 @@ def broadcast(message):
         client.send(message)
 
 
-
 # Handling Messages From Clients
 def handle(client):
     while True:
@@ -31,7 +28,7 @@ def handle(client):
             # Broadcasting Messages
             message = client.recv(1024)
             if message == "list":
-                #client.send(clients)
+                # client.send(clients)
                 print("Ca marche")
             broadcast(message)
         except:
@@ -58,7 +55,6 @@ def receive():
         nickname = client.recv(1024).decode('ascii')
         nicknames.append(nickname)
         clients.append(client)
-
 
         # Print And Broadcast Nickname
         print("Nickname is {}".format(nickname))
