@@ -2,6 +2,7 @@ import socket
 import threading
 import sys
 import os
+
 # Connection Data
 host = '127.0.0.1'
 port = 8080
@@ -31,14 +32,12 @@ def handle(client):
             liste_user_message = message.split(' ')
             print(liste_user_message)
             if message == "list":
-
                 print("Ca marche")
-
             elif message == "/HELP":
                 print("/HELP Requested")
                 client.send(('HELP, QUIT, AFK, WAKE, LIST, NAME, PRIVATEMSG, ACCEPTPRIVATEMSG, DENYPRIVATEMSG, SENDFILE, ACCEPTFILE, DENYFILE').encode('ascii'))
 
-            elif liste_user_message[0].upper()  == "/SENDFILE":
+            elif liste_user_message[0].upper() == "/SENDFILE":
                 print("send file received")
                 if len(liste_user_message) != 4:
                     client.send("-fail 1: an argument is needed for this command".encode('ascii'))
@@ -52,7 +51,12 @@ def handle(client):
                     print("ip adress not found")
                     client.send("fail 205 : ip address invalid or not found".encode('ascii'))
                 else:
-                    print("encore de developement")
+                    file_client_receiver = clients[nicknames.index(liste_user_message[1])]
+                    file_client_receiver.send(("user " + liste_user_message[1] + " asks to send you " +
+                                               liste_user_message[3] + " /ACCEPTFILE or /DENYFILE ?").encode('ascii'))
+                    file_client_receiver.send("/SENDFILE".encode('ascii'))
+                    client.send(
+                        "+success: your request is sent successfully, waiting for 'otherUserName' to respond".encode('ascii'))
             else:
                 broadcast(message)
         except:
@@ -97,11 +101,9 @@ def receive():
 print("server listening ...")
 receive()
 
-
 ######################################################################################################
 ##Partie Dahbia
 #######################################################################################################
-
 
 
 ################################# fin partie dahbia

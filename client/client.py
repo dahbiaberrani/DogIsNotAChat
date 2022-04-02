@@ -20,6 +20,8 @@ def receive():
             message = client.recv(1024).decode('ascii')
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
+            elif message == '/SENDFILE':
+                client.send(input('accepter de vous recevoir le fichier: ').encode('ascii'))
             else:
                 print(message)
         except:
