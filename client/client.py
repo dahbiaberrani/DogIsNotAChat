@@ -57,6 +57,8 @@ def write():
             list()
         elif user_input.upper() == "/DENYFILE" or liste_user_input[0].upper() == '/DENYFILE':
             client.send(user_input.encode('ascii'))
+        elif user_input.upper() == "/PRIVATEMSG" or liste_user_input[0].upper() == "/PRIVATEMSG":
+            client.send(user_input.encode('ascii'))
         else:
             message = '{}: {}'.format(nickname, user_input)
             client.send(message.encode('ascii'))

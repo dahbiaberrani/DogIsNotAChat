@@ -17,6 +17,7 @@ clients = []
 nicknames = []
 # file_exchange_dictionnary = {}
 file_exchange_list = []
+message_private_list = []
 file_sender = ""
 file_receiver = ""
 
@@ -72,7 +73,7 @@ def handle(client):
                 if len(liste_user_message) != 2:
                     print("Argument missing for /DENYFILE command")
                     client.send("-fail 1: an argument is needed for this command ".encode('ascii'))
-                # elif liste_user_message[1] != file_sender or nicknames[clients.index(client)] != file_receiver:
+
                 elif (liste_user_message[1], nicknames[clients.index(client)]) not in file_exchange_list:
                     print("file sender from receiver = " + liste_user_message[1])
                     print("file sender stocked by server = " + file_sender)
@@ -82,6 +83,23 @@ def handle(client):
                     print("file sender from receiver = " + liste_user_message[1])
                     print("file sender stocked by server = " + file_sender)
                     client.send("+success the file has been successfully denied".encode('ascii'))
+            elif message.upper() == "/PRIVATEMSG" or liste_user_message[0].upper() == "/PRIVATEMSG":
+
+                print("privatemsg recieved")
+                if len(liste_user_message) != 2:
+                    client.send("-fail 1: an argument is needed for this command".encode('ascii'))
+                else:
+                    private_message_sender = nicknames[clients.index(client)]
+                    private_message_receiver = clients[nicknames.index(liste_user_message[1])]
+
+                    if (private_message_sender, liste_user_message[1]) in message_private_list:
+                        print("message verficate use already in")
+                        client.send("-fail 300:  you have already sent a request to this user".encode('ascii'))
+                    else:
+                        message_private_list.append((private_message_sender, liste_user_message[1]))
+                        client.send(("+success: your request is sent successfully, waiting for user " + liste_user_message[1] + " to respond").encode('ascii'))
+                        private_message_receiver.send(("You received a request from " + private_message_sender + " to private chat. ACCEPTPRIVATEMESSAGE or DENYPRIVATEMESSAGE ?").encode('ascii'))
+
             else:
                 broadcast(message.encode('ascii'))
         except:
