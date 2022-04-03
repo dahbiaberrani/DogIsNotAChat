@@ -16,6 +16,7 @@ server.listen()
 clients = []
 nicknames = []
 # file_exchange_dictionnary = {}
+file_exchange_list = []
 file_sender = ""
 file_receiver = ""
 
@@ -61,6 +62,8 @@ def handle(client):
                     client.send("+success: your request is sent successfully, waiting for 'otherUserName' to respond".encode('ascii'))
                     file_sender = file_nickname_sender
                     file_receiver = nicknames[clients.index(file_client_receiver)]
+                    file_exchange_list.append((file_sender, file_receiver))
+                    print(file_exchange_list)
                     print("file sender = " + file_sender)
                     print("file receiver = " + file_receiver)
             elif message.upper() == "/DENYFILE" or liste_user_message[0].upper() == "/DENYFILE":
@@ -70,7 +73,7 @@ def handle(client):
                     print("Argument missing for /DENYFILE command")
                     client.send("-fail 1: an argument is needed for this command ".encode('ascii'))
                 # elif liste_user_message[1] != file_sender or nicknames[clients.index(client)] != file_receiver:
-                elif liste_user_message[1] != file_sender:
+                elif (liste_user_message[1], nicknames[clients.index(client)]) not in file_exchange_list:
                     print("file sender from receiver = " + liste_user_message[1])
                     print("file sender stocked by server = " + file_sender)
                     print("no exchange with " + liste_user_message[1])
