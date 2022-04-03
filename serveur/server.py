@@ -15,6 +15,9 @@ server.listen()
 # Lists For Clients and Their Nicknames
 clients = []
 nicknames = []
+# file_exchange_dictionnary = {}
+# file_sender = ""
+# file_receiver = ""
 
 
 # Sending Messages To All Connected Clients
@@ -25,9 +28,10 @@ def broadcast(message):
 
 # Handling Messages From Clients
 def handle(client):
+    # global file_sender
+    # global file_receiver
     while True:
         try:
-            # Broadcasting Messages
             message = client.recv(1024).decode('ascii')
             liste_user_message = message.split(' ')
             print(liste_user_message)
@@ -53,13 +57,22 @@ def handle(client):
                 else:
                     file_client_receiver = clients[nicknames.index(liste_user_message[1])]
                     file_nickname_sender = nicknames[clients.index(client)]
-
                     file_client_receiver.send(("/SENDFILE user " + file_nickname_sender + " asks to send you " + liste_user_message[3] + " /ACCEPTFILE or /DENYFILE ?").encode('ascii'))
                     client.send("+success: your request is sent successfully, waiting for 'otherUserName' to respond".encode('ascii'))
+                    # file_sender = file_nickname_sender
+                    # file_receiver = nicknames[clients.index(file_client_receiver)]
+                    # print("file sender = " + file_sender)
+                    # print("file receiver = " + file_receiver)
             elif message.upper() == "/DENYFILE" or liste_user_message[0].upper() == "/DENYFILE":
                 print('denyfile received')
+                # print("file sender from receiver = " + liste_user_message[1])
+                # print("file sender stocked by server = " + file_sender)
                 if len(liste_user_message) != 2:
                     client.send("-fail 1: an argument is needed for this command ".encode('ascii'))
+                # # elif liste_user_message[1] != file_sender or nicknames[clients.index(client)] != file_receiver:
+                # elif liste_user_message[1] != file_sender:
+                #     print("no exchange with " + liste_user_message[1])
+                #     # client.send(("-fail 301: you don’t have a sendfile request  from " + liste_user_message[1]).encode('ascii'))
                 else:
                     client.send("+success the file has been successfully denied".encode('ascii'))
             else:

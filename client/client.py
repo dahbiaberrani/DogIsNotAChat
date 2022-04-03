@@ -56,10 +56,7 @@ def write():
         elif user_input == "/LIST":
             list()
         elif user_input.upper() == "/DENYFILE" or liste_user_input[0].upper() == '/DENYFILE':
-                #print(liste_message)
-                message_to_server = '/DENYFILE ' + file_nickname_sender
-                print("message to send to server: " + message_to_server)
-                client.send(message_to_server.encode('ascii'))
+            client.send(user_input.encode('ascii'))
         else:
             message = '{}: {}'.format(nickname, user_input)
             client.send(message.encode('ascii'))
