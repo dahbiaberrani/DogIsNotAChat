@@ -52,13 +52,18 @@ def handle(client):
                     client.send("fail 205 : ip address invalid or not found".encode('ascii'))
                 else:
                     file_client_receiver = clients[nicknames.index(liste_user_message[1])]
-                    file_client_receiver.send(("user " + liste_user_message[1] + " asks to send you " +
-                                               liste_user_message[3] + " /ACCEPTFILE or /DENYFILE ?").encode('ascii'))
-                    file_client_receiver.send("/SENDFILE".encode('ascii'))
-                    client.send(
-                        "+success: your request is sent successfully, waiting for 'otherUserName' to respond".encode('ascii'))
+                    file_nickname_sender = nicknames[clients.index(client)]
+
+                    file_client_receiver.send(("/SENDFILE user " + file_nickname_sender + " asks to send you " + liste_user_message[3] + " /ACCEPTFILE or /DENYFILE ?").encode('ascii'))
+                    client.send("+success: your request is sent successfully, waiting for 'otherUserName' to respond".encode('ascii'))
+            elif message.upper() == "/DENYFILE" or liste_user_message[0].upper() == "/DENYFILE":
+                print('denyfile received')
+                if len(liste_user_message) != 2:
+                    client.send("-fail 1: an argument is needed for this command ".encode('ascii'))
+                else:
+                    client.send("+success the file has been successfully denied".encode('ascii'))
             else:
-                broadcast(message)
+                broadcast(message.encode('ascii'))
         except:
             # Removing And Closing Clients
             index = clients.index(client)

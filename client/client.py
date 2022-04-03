@@ -10,18 +10,27 @@ nickname = input("Choose your nickname: ")
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', 8080))
 
-
+file_nickname_sender = ""
 # Listening to Server and Sending Nickname
 def receive():
+    global file_nickname_sender
     while True:
         try:
             # Receive Message From Server
             # If 'NICK' Send Nickname
             message = client.recv(1024).decode('ascii')
+            liste_message = message.split(' ')
+            #print(liste_message)
+            #print(liste_message[0])
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
-            elif message == '/SENDFILE':
-                client.send(input('accepter de vous recevoir le fichier: ').encode('ascii'))
+            elif liste_message[0] == '/SENDFILE':
+
+                #print("send file command received")
+                print(liste_message)
+                file_nickname_sender = liste_message[2]
+                print("user " + file_nickname_sender + " asks to send " + liste_message[7] + " /ACCEPTFILE or /DENYFILE : ")
+
             else:
                 print(message)
         except:
@@ -34,20 +43,25 @@ def receive():
 # Sending Messages To Server
 def write():
     while True:
-        m = input('')
-        liste_user_message = m.split(' ')
-        print(liste_user_message)
+        user_input = input('')
+        liste_user_input = user_input.split(' ')
+        print(liste_user_input)
 
-        if m == "/QUIT":
+        if user_input == "/QUIT":
             quit()
-        elif m == "/HELP":  # Partie Dahbia
+        elif user_input == "/HELP":  # Partie Dahbia
             help()
-        elif liste_user_message[0].upper() == "/SENDFILE":  # Partie Dahbia
-            send_file(m)
-        elif m == "/LIST":
+        elif liste_user_input[0].upper() == "/SENDFILE":  # Partie Dahbia
+            send_file(user_input)
+        elif user_input == "/LIST":
             list()
+        elif user_input.upper() == "/DENYFILE" or liste_user_input[0].upper() == '/DENYFILE':
+                #print(liste_message)
+                message_to_server = '/DENYFILE ' + file_nickname_sender
+                print("message to send to server: " + message_to_server)
+                client.send(message_to_server.encode('ascii'))
         else:
-            message = '{}: {}'.format(nickname, m)
+            message = '{}: {}'.format(nickname, user_input)
             client.send(message.encode('ascii'))
 
 

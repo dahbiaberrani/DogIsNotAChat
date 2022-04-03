@@ -283,13 +283,13 @@ RFC 11111                                      DNC                              
 
 
 	/DENYPRIVATEMESSAGE <username>
-
++success: you just refuse to chat with ‘username’ in private mode
 
 	Arguments: the username where the request came from -REQUIRED
 
 
 	Possible responses:
-		+success: you just refuse to chat with ‘username’ in private mode
+
 		-fail 1: an argument is needed for this command
 		-fail 310: you don’t have a request from ‘username’
                 
