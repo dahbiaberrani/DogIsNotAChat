@@ -1,1 +1,2 @@
 /sendfile dahbia 127.0.0.1 file.txt
+/privatemsg dahbia
