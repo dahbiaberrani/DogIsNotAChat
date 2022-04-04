@@ -2,6 +2,7 @@ import socket
 import threading
 import os
 
+log_enabled = True
 # Informations de connexion
 host = '127.0.0.1'
 port = 8080
@@ -31,10 +32,10 @@ message_private_list = []
 file_sender = ""
 file_receiver = ""
 
-# focntion pour les logs
-log_enbled = True
+# fonction pour les logs
+
 def log(log_message):
-    if log_enbled:
+    if log_enabled:
         print(log_message)
 
 # diffuser un message pour tout les clients
@@ -131,22 +132,38 @@ def handle(client):
                     client.send("+success the file has been successfully denied".encode('UTF8'))
             # TODO Code /ACCEPTFILE  start new dedicated socket and thread for file exchange
             elif message.upper() == "/PRIVATEMSG" or liste_user_message[0].upper() == "/PRIVATEMSG":
-
                 log("privatemsg recieved")
                 if len(liste_user_message) != 2:
+                    log("missing argument for /PRIVATEMSG command")
                     client.send("-fail 1: an argument is needed for this command".encode('UTF8'))
                 else:
-                    private_message_sender_nickname = clients_key_list[clients_val_list.index(client)]
-                    private_message_receiver_client = clients[liste_user_message[1]]
-
-                    if (private_message_sender_nickname, liste_user_message[1]) in message_private_list:
-                        log("message verficate use already in")
-                        client.send("-fail 300:  you have already sent a request to this user".encode('UTF8'))
+                    clients_key_list = list(clients.keys())
+                    log(clients_key_list)
+                    clients_val_list = list(clients.values())
+                    log(len(clients_val_list))
+                    private_message_receiver_nickname = liste_user_message[1]
+                    if private_message_receiver_nickname not in clients_key_list:
+                        log(private_message_receiver_nickname + " destination client does not exist!")
+                        client.send(("-fail 110: user " + private_message_receiver_nickname + " not found").encode("UTF8"))
                     else:
-                        message_private_list.append((private_message_sender_nickname, liste_user_message[1]))
-                        log(message_private_list)
-                        client.send(("+success: your request is sent successfully, waiting for user " + liste_user_message[1] + " to respond").encode('UTF8'))
-                        private_message_receiver_client .send(("You received a request from " + private_message_sender_nickname + " to private chat. ACCEPTPRIVATEMESSAGE or DENYPRIVATEMESSAGE ?").encode('UTF8'))
+                        private_message_sender_nickname = clients_key_list[clients_val_list.index(client)]
+                        private_message_receiver_client = clients[private_message_receiver_nickname]
+                        log("private message initiator : " + private_message_sender_nickname)
+                        log("private message destination : " + private_message_receiver_nickname)
+
+                        if (private_message_sender_nickname, private_message_receiver_nickname) in message_private_list:
+                            log("private message request already ongoing")
+                            client.send("-fail 300:  you have already sent a request to this user".encode('UTF8'))
+
+                        else:
+                            message_private_list.append((private_message_sender_nickname, private_message_receiver_nickname))
+                            log("private list messaging : \n " + str(message_private_list))
+                            private_message_receiver_client.send(("You received a request from " + private_message_sender_nickname + " to private chat. /ACCEPTPRIVATEMESSAGE or /DENYPRIVATEMESSAGE ?").encode('UTF8'))
+                            client.send(("+success: your request is sent successfully, waiting for user " + private_message_receiver_nickname + " to respond").encode('UTF8'))
+            # TODO code /DENYPRIVATEMESSAGE
+
+            # TODO code /ACCEPTPRIVATEMESSAGE and moove the couple of initiator and destination to accepted private message list and discarde broadcast to them
+
             elif liste_user_message[0].upper() == "/NAME":
                 log(len(liste_user_message))
                 if len(liste_user_message) != 2:
