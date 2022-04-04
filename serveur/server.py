@@ -29,6 +29,7 @@ def get_username(myclient):
 # file_exchange_dictionnary = {}
 file_exchange_list = []
 message_private_list = []
+approved_private_messaging_list = []
 file_sender = ""
 file_receiver = ""
 
@@ -62,6 +63,7 @@ def handle(client):
     global clients
     global file_exchange_list
     global message_private_list
+    global approved_private_messaging_list
     while True:
 
         try:
@@ -129,8 +131,11 @@ def handle(client):
                     log("file sender stocked by server = " + clients_key_list[clients_val_list.index(client)])
                     # remove file transfert in file_exchange list
                     file_exchange_list.remove((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
-                    client.send("+success the file has been successfully denied".encode('UTF8'))
-            # TODO Code /ACCEPTFILE  start new dedicated socket and thread for file exchange
+
+                    # TODO Code /ACCEPTFILE  start new dedicated socket and thread for file exchange
+                    client.send("+success: the file has been successfully denied".encode('UTF8'))
+
+
             elif message.upper() == "/PRIVATEMSG" or liste_user_message[0].upper() == "/PRIVATEMSG":
                 log("privatemsg recieved")
                 if len(liste_user_message) != 2:
@@ -154,15 +159,61 @@ def handle(client):
                         if (private_message_sender_nickname, private_message_receiver_nickname) in message_private_list:
                             log("private message request already ongoing")
                             client.send("-fail 300:  you have already sent a request to this user".encode('UTF8'))
-
+                        elif (private_message_sender_nickname, private_message_receiver_nickname) in approved_private_messaging_list:
+                            log("private messaging already established")
+                            client.send(("-fail 301: you are already in private mode with " + private_message_receiver_nickname).encode('UTF8'))
                         else:
                             message_private_list.append((private_message_sender_nickname, private_message_receiver_nickname))
                             log("private list messaging : \n " + str(message_private_list))
                             private_message_receiver_client.send(("You received a request from " + private_message_sender_nickname + " to private chat. /ACCEPTPRIVATEMESSAGE or /DENYPRIVATEMESSAGE ?").encode('UTF8'))
                             client.send(("+success: your request is sent successfully, waiting for user " + private_message_receiver_nickname + " to respond").encode('UTF8'))
-            # TODO code /DENYPRIVATEMESSAGE
 
-            # TODO code /ACCEPTPRIVATEMESSAGE and moove the couple of initiator and destination to accepted private message list and discarde broadcast to them
+            elif message.upper() == "/DENYPRIVATEMESSAGE" or liste_user_message[0].upper() == "/DENYPRIVATEMESSAGE":
+                log('deny private messaging received')
+                clients_key_list = list(clients.keys())
+                clients_val_list = list(clients.values())
+                if len(liste_user_message) != 2:
+                    log("Argument missing for /DENYPRIVATEMESSAGE command")
+                    client.send("-fail 1: an argument is needed for this command".encode('UTF8'))
+
+                elif (liste_user_message[1], clients_key_list[clients_val_list.index(client)]) not in message_private_list:
+                    log("private message stocked by server = " + clients_key_list[clients_val_list.index(client)])
+                    log("private message from receiver = " + liste_user_message[1])
+                    log("no exchange with " + liste_user_message[1])
+                    client.send(("-fail 310: you do not have a request from  from " + liste_user_message[1]).encode("UTF8"))
+
+                else:
+                    log("private message from receiver = " + liste_user_message[1])
+                    log("private message stocked by server = " + clients_key_list[clients_val_list.index(client)])
+                    #  remove from waiting private messaging list
+                    message_private_list.remove((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
+                    log("waiting approval private messaging list = " + str(message_private_list))
+                    client.send(("+success: you just refuse to chat with " + liste_user_message[1] + " in private mode").encode('UTF8'))
+
+            elif message.upper() == "/ACCEPTPRIVATEMESSAGE " or liste_user_message[0].upper() == "/ACCEPTPRIVATEMESSAGE":
+                log('accept private messaging received')
+                clients_key_list = list(clients.keys())
+                clients_val_list = list(clients.values())
+                if len(liste_user_message) != 2:
+                    log("Argument missing for /ACCEPTPRIVATEMESSAGE command")
+                    client.send("-fail 1: an argument is needed for /ACCEPTPRIVATEMESSAGE command, usage: "
+                                "/ACCEPTPRIVATEMESSAGE <username>".encode('UTF8'))
+
+                elif (liste_user_message[1], clients_key_list[clients_val_list.index(client)]) not in message_private_list:
+                    log("private message stocked by server = " + clients_key_list[clients_val_list.index(client)])
+                    log("private message from receiver = " + liste_user_message[1])
+                    log("no exchange with " + liste_user_message[1])
+                    client.send(
+                        ("-fail 310: you do not have a request from  from " + liste_user_message[1]).encode("UTF8"))
+                else:
+                    log("private message from receiver = " + liste_user_message[1])
+                    log("private message stocked by server = " + clients_key_list[clients_val_list.index(client)])
+                    # add to approved private messaging list and remove from waiting private messaging list
+                    message_private_list.remove((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
+                    log("waiting approval private messaging list = " + str(message_private_list))
+                    approved_private_messaging_list.append((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
+                    log("approved private messaging list = " + str(approved_private_messaging_list))
+                    client.send(("+success: Welcome to a private chat with " + liste_user_message[1]).encode('UTF8'))
 
             elif liste_user_message[0].upper() == "/NAME":
                 log(len(liste_user_message))

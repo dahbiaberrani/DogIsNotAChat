@@ -25,7 +25,7 @@ Tables of contents:
    4. LIST Command
    5. NAME Command
    6. PRIVATEMSG Command 
-   7. PM command
+   7. PM command # TODO add a command to end already established private mode between two users
    8. ACCEPTPRIVATEMSG Command
    9. DENYPRIVATEMSG Command
    10. SENDFILE Command
