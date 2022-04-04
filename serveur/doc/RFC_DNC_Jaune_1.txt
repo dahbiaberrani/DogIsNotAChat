@@ -1,0 +1,428 @@
+﻿FEZZANI Ismaël
+FILALI Ikram
+KUZAYI MAKALA Enoch
+MUNOZ Matteo
+BERRANI Dahbia
+
+
+                                         Dog is Not a Chat - Version 1
+Status of this Memo
+This document contains documentation and command’s description 
+for the DNC Protocol we’re developing. You can contact the team members for more information.
+
+
+
+
+Tables of contents:
+
+
+1. Introduction 
+2. Response codes definition
+3. Basic operations
+   1. QUIT Command 
+   2. AFK Command
+   3. WAKE  Command
+   4. LIST Command
+   5. NAME Command
+   6. PRIVATEMSG Command 
+   7. PM command
+   8. ACCEPTPRIVATEMSG Command
+   9. DENYPRIVATEMSG Command
+   10. SENDFILE Command
+   11. ACCEPTFILE Command
+   12. DENYFILE Command    
+   13. HELP Command
+
+
+Yellow Team                               Standards Track                                  [Page 1]
+RFC 11111                                      DNC                                    February 2022
+
+
+1. Introduction:
+
+
+The Dog is Not a Chat protocols aims to capture the connections between users on
+a server. This server allows users to chat using a TCP connection.
+In order to be logged in, the user MUST enter his username, which MUST NOT be already taken by another user, the server connects the user and SHOULD send an alert to all the connected users.
+The connected users MAY send chats to the server, which MUST broadcast the author’s username and the chat’s text to all connected users.
+Users MAY also send control messages, they MUST be connected. This control message MUST start with the ‘/’ character and isn’t case sensitive.
+The server SHOULD allow users to send requests for private discussions to other users, who MAY accept or deny it.
+If a user wants to send a file to another user, he MUST send a request to this user, who MAY accept it or not. If the request is accepted, a peer-to-peer transfer is established between the two users.
+The user MAY also send a private message by using the commands '/PM' which is described in the following command description.
+If the user wants to talk on the chat, he MUST do not use the prefix '/'
+
+2. Response codes definition:
+
+	success : Process successful
+	1: an argument is needed for this command 
+	1xx : Process fail at the level of server:
+		-105: the username is already taken 
+		-110: user 'otherUsername' not found
+	2xx : Process fail at the level of file transfer:
+		201: file was not successfully sent 
+		202: path not found
+		203: port already in use 
+		204: port not found please use a port between <2000 & 60000>
+		205 : ip address invalid or not found
+	3xx : Process fail at the level of private messages
+		300: you have already sent a request to this user
+		301: you don’t have a sendfile request  from ‘username’
+		302: you are not in a private chat with this user 
+
+
+Yellow Team                               Standards Track                                  [Page 2]
+RFC 11111                                      DNC                                    February 2022
+
+
+3. Basic operations:
+
+        Description: the user interrupts the TCP connection and notify the others users.
+
+        /QUIT
+                
+        Arguments: none
+
+        Possible Response:
+		 -‘username’ logs out
+		+success: you are successfully logged out
+        Examples:
+                C: /QUIT
+                S: - WarriorKiller logs out
+				+success: you are successfully logged out
+
+                
+                        
+Yellow Team                               Standards Track                                  [Page 3]
+RFC 11111                                      DNC                                    February 2022
+        
+Description: the user stays connected, he still can receive messages but can no longer send any messages.
+
+	/AFK
+
+        Arguments: none 
+
+        Possible Responses:
+		-‘username’ is in AFK mode now
+		+success : you are now in afk state
+		-fail: you are already in AFK mode
+        Examples:
+                C: /AFK
+                S: - WarriorKiller is in AFK mode now
+				S: +success : you are now in afk state
+
+				C: /AFK
+				S:-fail: you are already in AFK mode
+                
+
+
+Yellow Team                               Standards Track                                  [Page 4]
+RFC 11111                                      DNC                                    February 2022
+        
+Description: The user can change his state from afk to connected, he can now send messages again, the others users are also notified with 
+a server message.
+
+	/WAKE
+
+        Arguments: none 
+
+	Possible Response:
+		-‘username’ is no longer AFK
+		+success: you are no longer AFK
+		-fail: you are not in afk mode
+		
+                
+	Examples:
+		C: /WAKE
+		S:- WarriorKiller is no longer AFK
+		S: +success: you are no longer AFK
+
+		C: /WAKE
+		S:-fail: you are not in afk mode
+
+
+
+
+Yellow Team                               Standards Track                                  [Page 5]
+RFC 11111                                      DNC                                    February 2022
+        
+        Description: show the list of connected users
+
+	/LIST
+
+	Arguments: none
+
+	Possible response:
+		+success
+		
+	Examples:
+		C: /LIST
+		S:WarriorKiller - connected 
+		S:LeoTure - afk
+		S:ChuckNorris - connected
+
+
+Yellow Team                               Standards Track                                  [Page 6]
+RFC 11111                                      DNC                                    February 2022
+
+
+	Description: Allow the user to change his username if the new username is not already taken.
+        
+	/NAME <username>
+
+        Arguments: the new username - REQUIRED
+
+        Possible responses:
+                - user ‘old username’ is now ‘newsUserName’
+                +success You have successfully been renamed to ‘new username ’
+                -fail :1: an argument is needed for this command 
+                -fail 105: username already taken
+
+        Examples:
+                C: /NAME KillerDestroyer
+                S: - user WarriorKiller is now KillerDestroyer
+
+
+
+Yellow Team                               Standards Track                                  [Page 7]
+RFC 11111                                      DNC                                    February 2022
+
+
+        Description: The user invites another user for a private chat (whose username MUST be given in argument), and MUST wait for him to ACCEPT or DENY the invitation        
+                
+	/PRIVATEMSG <username> 
+
+
+	Arguments: username of the user to invite -REQUIRED
+	
+
+	Possible Response:
+		-You received a request from ChuckNorris to private chat. ACCEPTPRIVATEMESSAGE or DENYPRIVATEMESSAGE ? 
+		+success: your request is sent successfully, waiting for user ‘username’ to respond…
+		-fail 1: an argument is needed for this command 
+		-fail 300:  you have already sent a request to this user
+                
+	Examples:
+		C:/PRIVATEMSG
+		S:-fail 1: an argument is needed for this command
+
+		C: /PRIVATEMSG WarrioKiller
+		S: -You received a request from ChuckNorris to private chat. ACCEPTPRIVATEMESSAGE or DENYPRIVATEMESSAGE ? 
+
+		C: /PRIVATEMSG WarrioKiller
+		S: -fail 300:  you have already sent a request to this user
+
+
+Yellow Team                               Standards Track                                  [Page 8]
+RFC 11111                                      DNC                                    February 2022
+
+
+	Description: the user sends a public message to another user 
+	
+	/PM <interlocutor's username> <message>
+	
+	Arguments: the other interlocutor's username and the message to send- REQUIRED
+
+	possible responses:
+		+success: the message has been successfully sent
+		-fail:1 an argument is needed for this command
+		-fail:110: user 'otherUsername' not found
+		-fail:302: you are not in a private chat with this user
+
+	Examples:
+		C:/PM robtWarrior hello 
+		S: fail:110: user robtWarrior not found
+
+		C:/PM hello 
+		S:-fail:1 an argument is needed for this command
+
+		C:/PM 
+		S:-fail:1 an argument is needed for this command
+
+		C:/PM WarriorKiller hello 
+		S:-fail:302: you are not in a private chat with this user
+
+		C:/PM ChuckNorris hello 
+		S:message successfully sent 
+
+		
+Yellow Team                               Standards Track                                  [Page 9]
+RFC 11111                                      DNC                                    February 2022
+
+
+	Description: the user accepts a private message request from another user.
+
+
+	/ACCEPTPRIVATEMESSAGE <username>
+
+
+	Arguments: the username where the request came from -REQUIRED
+
+
+	Possible responses:
+		Welcome to a private chat with ‘username’
+		+success 
+		+success: ‘username’ accepted to chat with you in private mode
+		-fail 1: an argument is needed for this command
+		-fail 301: you don’t have a request from ‘username’
+
+	Example:
+		C:/ACCEPTPRIVATEMESSAGE WarriorKiller
+		S:Welcome to a private chat with WarriorKiller
+
+		C: /ACCEPTPRIVATEMESSAGE
+		S: -fail 1: an argument is needed for this command
+
+		C: /ACCEPTPRIVATEMESSAGE ChuckNorris
+		S: -fail 301: you don’t have a request from ChuckNorris
+
+
+Yellow Team                               Standards Track                                  [Page 10]
+RFC 11111                                      DNC                                    February 2022
+
+	Description: the user refuses the private message request from another user.
+
+
+	/DENYPRIVATEMESSAGE <username>
++success: you just refuse to chat with ‘username’ in private mode
+
+	Arguments: the username where the request came from -REQUIRED
+
+
+	Possible responses:
+
+		-fail 1: an argument is needed for this command
+		-fail 310: you don’t have a request from ‘username’
+                
+	Example:
+		C:/DENYPRIVATEMESSAGE ChuckNorris
+		S:+success:  you just refuse to chat with ‘username’ in private mode
+
+		C:/DENYPRIVATEMESSAGE
+		S:-fail 1: an argument is needed for this command
+
+		C:/DENYPRIVATEMESSAGE ChuckNorris
+		S:-fail 301: you don’t have a request from ChuckNorris
+
+
+Yellow Team                               Standards Track                                  [Page 11]
+RFC 11111                                      DNC                                    February 2022
+
+
+	Description: The user want to send a file to another user 
+
+	/SENDFILE <username> <ip address> <file path>
+
+	Arguments: username of the receiver -REQUIRED, ip address of the receiver -REQUIRED, path of the file to send -REQUIRED
+
+	Possibles responses: 
+		+success: your request is sent successfully, waiting for 'otherUserName' to respond…
+		-fail 1: arguments needed 
+		-fail 110 : user 'otherUsername' not found
+		-fail 202 : path not found, canceling …
+		-fail 205 : ip address invalid or not found
+
+	Example: 
+		C: /SENDFILE WarriorKiller 192.168.56.129 file.txt
+		S: user ChuckNorris asks to send you ‘wallpaper.jpg (30MO’ file. ACCEPTFILE or DENYFILE (file size : 30 Mo) ?
+
+		C: /SENDFILE 
+		S:-fail 1: an argument is needed for this command 
+
+		C: /SENDFILE WarriorKiller
+		S:-fail 1: an argument is needed for this command 
+
+		C: /SENDFILE Warrioriller file.txt
+		S: -fail 110 : user Warrioriller not found
+
+		C: /SENDFILE WarriorKiller ////file
+		S: -fail 202 : path not found, canceling …
+
+		C: /SENDFILE WarriorKiller 192.1G8..56.129 ////file
+		S: -fail 205 : ip address invalid or not found
+
+
+Yellow Team                               Standards Track                                  [Page 12]
+RFC 11111                                      DNC                                    February 2022
+
+	Description: The user chooses to accept the file sent by another user
+        
+	/ACCEPTFILE <username> <file storage path> <port>
+
+	Arguments: username -REQUIRED,file storage path -REQUIRED, port  -REQUIRED
+
+	Possible responses:
+		+success: the file has been successfully sent
+		+succes: the file has been successfully sent to the download directory
+		-fail 1: an argument is needed for this command 
+		-fail 201: file was not successfully sent 
+		-fail 202 : path not found, cancelling …
+		-fail 203: port already in use 
+		-fail 204 : port not found please use a port between <2000 & 60000>
+		-fail 301: you don’t have a sendfile request  from ‘username’
+
+	Example:
+		S: user WarriorKiller asks to send, ‘wallpaper.jpg (30MO’ file. ACCEPTFILE or DENYFILE (file size : 30 Mo) ?
+		C:/ACCEPTFILE WarriorKiller desktop/ 3030
+		S:+success: the file has been successfully sent
+
+		C:/ACCEPTFILE ChuckNorris desktop/ 3030
+		S:-fail 301: you don’t have a sendfile request  from ChuckNorris
+
+		C:/ACCEPTFILE 3030
+		S:+success: the file has been successfully sent to the download directory
+  
+		C:/ACCEPTFILE 
+		S: -fail 1: an argument is needed for this command
+
+		C:/ACCEPTFILE 2
+		S:-fail 204 : port not found please use a port between <2000 & 60000>
+
+		C:/ACCEPTFILE toto
+		S:-fail 204 : port not found please use a port between <2000 & 60000>
+
+		C:/ACCEPTFILE 8080
+		S:-fail 203: port already in use 
+
+
+Yellow Team                               Standards Track                                  [Page 13]
+RFC 11111                                      DNC                                    February 2022
+
+	Description: The user refuses to import the file sent by another user
+        
+	/DENYFILE <username>
+
+	Arguments: username of the user who sent a file -REQUIRED
+
+	possible responses:
+		+success the file has been successfully denied 
+		-fail 1: an argument is needed for this command 
+		-fail 301: you don’t have a sendfile request  from ‘username’
+
+	Example:
+		S: user WarriorKiller asks to send ‘wallpaper.jpg (30Mo) file. ACCEPTFILE or DENYFILE (file size : 30 Mo) ?
+		C: /DENYFILE WarriorKiller
+		S: You declined the file ‘wallpaper.jpg’ from WarriorKiller
+
+		C: /DENYFILE 
+		S: -fail 1: an argument is needed for this command 
+
+		C: /DENYFILE ChuckNorris
+		S: -fail 301: you don’t have a sendfile request  from ChuckNorris
+
+        
+Yellow Team                               Standards Track                                  [Page 14]
+RFC 11111                                      DNC                                    February 2022
+
+	Description: List all the commands available 
+        
+	/HELP
+
+	Arguments: none 
+
+	Possible responses:
+		+success 
+
+
+	Example:
+		C: /HELP 
+		S: HELP, QUIT, AFK, WAKE, LIST, NAME, PRIVATEMSG, ACCEPTPRIVATEMSG, DENYPRIVATEMSG, SENDFILE, ACCEPTFILE, DENYFILE
