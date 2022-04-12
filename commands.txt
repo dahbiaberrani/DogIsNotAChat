@@ -1,2 +1,10 @@
 /sendfile dahbia 127.0.0.1 file.txt
 /privatemsg dahbia
+
+#/PM message tests
+/PM
+/PM dahbia
+/PM toto hello
+/PM dahbia hello
+/privatemsg dahbia
+/PM dahbia hello
