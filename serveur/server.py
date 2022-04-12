@@ -214,6 +214,34 @@ def handle(client):
                     approved_private_messaging_list.append((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
                     log("approved private messaging list = " + str(approved_private_messaging_list))
                     client.send(("+success: Welcome to a private chat with " + liste_user_message[1]).encode('UTF8'))
+            elif liste_user_message[0].upper() == "/PM":
+                log("Private Message received ")
+                clients_key_list = list(clients.keys())
+                clients_val_list = list(clients.values())
+                if len(liste_user_message) != 3:
+                    log("Argument missing for /PM command")
+                    client.send("-fail 1: an argument is needed for this command".encode('UTF8'))
+               # Destination client doesn't exist in connecetd clients
+                elif liste_user_message[1] not in clients_key_list:
+
+                    log("private message for : " + liste_user_message[1])
+                    log(liste_user_message[1] + " doesn't exist")
+                    client.send(("-fail 110: user " + liste_user_message[1] + " not found").encode("UTF8"))
+
+                else:
+                    private_message_receiver_nickname = liste_user_message[1]
+                    private_message_sender_nickname = clients_key_list[clients_val_list.index(client)]
+                    private_message_receiver_client = clients[private_message_receiver_nickname]
+                    log("private message initiator : " + private_message_sender_nickname)
+                    log("private message destination : " + private_message_receiver_nickname)
+                   # No established private chat with destination client
+                    if (private_message_sender_nickname, private_message_receiver_nickname) not in approved_private_messaging_list:
+                        log("you don't have a private chat with this user")
+                        client.send("-fail:302: you are not in a private chat with this user".encode('UTF8'))
+
+                    else:
+                        private_message_receiver_client.send(("/PM " + private_message_sender_nickname + " " + liste_user_message[2]).encode('UTF8'))
+                        client.send(("+success: message successfully sent to " + private_message_receiver_nickname).encode('UTF8'))
 
             elif liste_user_message[0].upper() == "/NAME":
                 log(len(liste_user_message))
@@ -242,7 +270,6 @@ def handle(client):
                     broadcast(f"-{get_username(client)} is no longer AFK".encode("UTF8"))
                 else:
                     client.send("-fail: you are not in afk mode".encode("UTF8"))
-
             else:
                 if client in connected_users:
                     mes = '{}: {}'.format(get_username(client), message).encode("UTF8")

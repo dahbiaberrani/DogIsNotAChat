@@ -2,9 +2,10 @@ import socket
 import sys
 import threading
 
-# estion des threads
+# Gestion des threads
 receive_thread_running = True
 sending_thread_running = True
+
 #choix du pseudo
 nickname = input("Choose your nickname: ")
 # Connecting To Server
@@ -16,6 +17,7 @@ file_nickname_sender = ""
 def receive():
     global file_nickname_sender
     global receive_thread_running
+    global sending_thread_running
     while receive_thread_running:
         try:
             # Receive Message From Server
@@ -28,6 +30,7 @@ def receive():
                 server.send(nickname.encode('UTF8'))
             elif message == "/QUIT":
                 quit()
+                break
             elif liste_message[0] == '/SENDFILE':
 
                 #print("send file command received")
@@ -39,30 +42,40 @@ def receive():
         except:
             # Close Connection When Error
             print("An error occured!")
+            sending_thread_running = False
+            receive_thread_running = False
             server.close()
             break
 
 # Sending Messages To Server
 def write():
     global sending_thread_running
-    while sending_thread_running :
-        user_input = input('')
-        liste_user_input = user_input.split(' ')
-        print(liste_user_input)
+    global receive_thread_running
+    while sending_thread_running:
+        try:
+            user_input = input('')
+            liste_user_input = user_input.split(' ')
+            print(liste_user_input)
 
-        # if user_input.upper() == "/QUIT":
-        #     quit()
-        if user_input.startswith('/'):
-            send_to_server(user_input)
-        else:
-            message = '{}: {}'.format(nickname, user_input)
-            send_to_server(message)
-
+            # if user_input.upper() == "/QUIT":
+            #     quit()
+            if user_input.startswith('/'):
+                send_to_server(user_input)
+            else:
+                message = '{}: {}'.format(nickname, user_input)
+                send_to_server(message)
+        except:
+            # Close Connection When Error
+            print("An error occured!")
+            receive_thread_running = False
+            sending_thread_running = False
+            break
 
 def quit():
+    global sending_thread_running
+    global receive_thread_running
     sending_thread_running =False
     receive_thread_running = False
-
 
 def send_to_server(message):
     server.send(message.encode('UTF8'))
