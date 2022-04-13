@@ -144,16 +144,16 @@ def handle(client):
                     file_exchange_list.remove((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
                     client.send("+success: the file has been successfully denied".encode('UTF8'))
 
-            # TODO Code /ACCEPTFILE  start new dedicated socket and thread for file exchange
+
             elif liste_user_message[0].upper() == "/ACCEPTFILE":
                 log("File transfert accepted received")
-                if len(liste_user_message) != 5:
+                if len(liste_user_message) != 6:
                     client.send("fail: an argument is needed for this command".encode('UTF8'))
                 else:
-                    # TODO: Start DEbug from here
                     clients_key_list = list(clients.keys())
                     clients_val_list = list(clients.values())
                     file_nickname_sender = liste_user_message[1]
+                    file_name = liste_user_message[5]
 
                     log(" accepting file from user: " + file_nickname_sender)
                     file_client_sender = clients[file_nickname_sender]
@@ -166,12 +166,25 @@ def handle(client):
                         # save file receiver client IP address
                         file_receiver_ip_address = liste_user_message[2]
                         clients_ip_addresses_dictionary[file_nickname_receiver] = file_receiver_ip_address
-                        file_client_sender.send(("/ACCEPTFILE " + file_nickname_receiver + " " + file_receiver_ip_address + " " + liste_user_message[3] + " " + liste_user_message[4]).encode('UTF8'))
-                        # Todo : remove file transfert from waiting_file_acceptance_list and add it to aproved_file_exchange_list
+                        file_client_sender.send(("/ACCEPTFILE " + file_nickname_receiver + " " + file_receiver_ip_address + " " + liste_user_message[3] + " " + liste_user_message[4] + " " + file_name).encode('UTF8'))
                         approved_file_exchange_list.append((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
                         log("Approved file exchange list = " + str(approved_file_exchange_list))
+                        log("file exchange list = " + str(file_exchange_list))
+                        log((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
                         file_exchange_list.remove((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
+                        log("file exchange list = " + str(file_exchange_list))
 
+            elif liste_user_message[0].upper() == "/STARTFILETRANSFER":
+                log("File transfer Starting")
+                if len(liste_user_message) != 6:
+                    client.send("fail: an argument is needed for this command".encode('UTF8'))
+                else:
+                    log("sending /STARTFILETRANSFER")
+                    # clients_key_list = list(clients.keys())
+                    # clients_val_list = list(clients.values())
+                    # file_nickname_sender = liste_user_message[1]
+                    # file_client_receiver = clients[file_nickname_sender]
+                    # file_client_receiver.send(message.encode('UTF8'))
 
             elif message.upper() == "/PRIVATEMSG" or liste_user_message[0].upper() == "/PRIVATEMSG":
                 log("privatemsg recieved")
