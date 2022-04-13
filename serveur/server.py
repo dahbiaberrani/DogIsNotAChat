@@ -189,8 +189,8 @@ def handle(client):
                     log("sending /STARTFILETRANSFER")
                     clients_key_list = list(clients.keys())
                     clients_val_list = list(clients.values())
-                    file_nickname_sender = liste_user_message[1]
-                    file_nickname_receiver = clients_key_list[clients_val_list.index(client)]
+                    file_nickname_receiver = liste_user_message[1]
+                    file_nickname_sender = clients_key_list[clients_val_list.index(client)]
                     file_client_receiver = clients[file_nickname_receiver]
                     file_client_receiver.send(("/STARTFILETRANSFER " + file_nickname_sender + " " + liste_user_message[2] + " " + liste_user_message[3] + " " + liste_user_message[4] + " " + liste_user_message[5]).encode('UTF8'))
 
