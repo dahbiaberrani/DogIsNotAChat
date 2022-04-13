@@ -3,6 +3,7 @@ import threading
 import os
 
 log_enabled = True
+#Todo read server information from a configuration file
 # Informations de connexion
 host = '127.0.0.1'
 port = 8080
@@ -12,11 +13,22 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 server.listen()
 
-# La liste des clients et leurs username, keys = username, value = client
+# Dictionnaire des clients et leurs username, keys = username, value = client
 clients = {}
 
+# Dictionnaire des client et leurs adresses IPs pour l'utilisation peandant les trasferts de fichiers.
+clients_ip_addresses_dictionary = {}
 # Liste des clients connectés
 connected_users = []
+
+file_exchange_list = []
+approved_file_exchange_list = []
+
+message_private_list = []
+approved_private_messaging_list = []
+
+file_sender = ""
+file_receiver = ""
 
 # return username for any client
 def get_username(myclient):
@@ -25,17 +37,9 @@ def get_username(myclient):
             return username
     return "username doesn't exist"
 
-
-# file_exchange_dictionnary = {}
-file_exchange_list = []
-message_private_list = []
-approved_private_messaging_list = []
-file_sender = ""
-file_receiver = ""
-
 # fonction pour les logs
-
 def log(log_message):
+    # TODO: log in file also
     if log_enabled:
         print(log_message)
 
@@ -64,6 +68,8 @@ def handle(client):
     global file_exchange_list
     global message_private_list
     global approved_private_messaging_list
+    global approved_file_exchange_list
+    global clients_ip_addresses_dictionary
     while True:
 
         try:
@@ -93,20 +99,25 @@ def handle(client):
                 elif not os.path.exists(liste_user_message[3]):
                     log("file does not exist")
                     client.send("-fail 202 : path not found, canceling".encode('UTF8'))
-                elif liste_user_message[2] != host:
-                    log("ip adress not found")
-                    client.send("fail 205 : ip address invalid or not found".encode('UTF8'))
+                # elif liste_user_message[2] != host:
+                #
+                #     log("ip adress not found")
+                #     client.send("fail 205 : ip address invalid or not found".encode('UTF8'))
                 else:
                     clients_key_list = list(clients.keys())
                     log(clients_key_list)
                     clients_val_list = list(clients.values())
                     log(len(clients_val_list))
                     file_nickname_receiver = liste_user_message[1]
+
                     log("file receiver nickname: " + file_nickname_receiver)
                     file_client_receiver = clients[file_nickname_receiver]
                     log("file receiver client retreived")
                     file_nickname_sender = clients_key_list[clients_val_list.index(client)]
                     log("file sender nickname : " + file_nickname_sender)
+                    # save sender client IP address
+                    file_sender_ip_address = liste_user_message[2]
+                    clients_ip_addresses_dictionary[file_nickname_sender] = file_sender_ip_address
                     file_client_receiver.send(("/SENDFILE user " + file_nickname_sender + " asks to send you " + liste_user_message[3] + " /ACCEPTFILE or /DENYFILE ?").encode('UTF8'))
                     client.send("+success: your request is sent successfully, waiting for 'otherUserName' to respond".encode('UTF8'))
                     file_exchange_list.append((file_nickname_sender, file_nickname_receiver))
@@ -131,9 +142,35 @@ def handle(client):
                     log("file sender stocked by server = " + clients_key_list[clients_val_list.index(client)])
                     # remove file transfert in file_exchange list
                     file_exchange_list.remove((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
-
-                    # TODO Code /ACCEPTFILE  start new dedicated socket and thread for file exchange
                     client.send("+success: the file has been successfully denied".encode('UTF8'))
+
+            # TODO Code /ACCEPTFILE  start new dedicated socket and thread for file exchange
+            elif liste_user_message[0].upper() == "/ACCEPTFILE":
+                log("File transfert accepted received")
+                if len(liste_user_message) != 5:
+                    client.send("fail: an argument is needed for this command".encode('UTF8'))
+                else:
+                    # TODO: Start DEbug from here
+                    clients_key_list = list(clients.keys())
+                    clients_val_list = list(clients.values())
+                    file_nickname_sender = liste_user_message[1]
+
+                    log(" accepting file from user: " + file_nickname_sender)
+                    file_client_sender = clients[file_nickname_sender]
+                    log("file client sender retrieved")
+                    file_nickname_receiver = clients_key_list[clients_val_list.index(client)]
+                    log("file receiver nickname : " + file_nickname_receiver)
+                    if (liste_user_message[1], clients_key_list[clients_val_list.index(client)]) not in file_exchange_list:
+                        client.send(("-fail 301: you do not have a sendfile request  from " + liste_user_message[1]).encode('UTF8'))
+                    else:
+                        # save file receiver client IP address
+                        file_receiver_ip_address = liste_user_message[2]
+                        clients_ip_addresses_dictionary[file_nickname_receiver] = file_receiver_ip_address
+                        file_client_sender.send(("/ACCEPTFILE " + file_nickname_receiver + " " + file_receiver_ip_address + " " + liste_user_message[3] + " " + liste_user_message[4]).encode('UTF8'))
+                        # Todo : remove file transfert from waiting_file_acceptance_list and add it to aproved_file_exchange_list
+                        approved_file_exchange_list.append((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
+                        log("Approved file exchange list = " + str(approved_file_exchange_list))
+                        file_exchange_list.remove((liste_user_message[1], clients_key_list[clients_val_list.index(client)]))
 
 
             elif message.upper() == "/PRIVATEMSG" or liste_user_message[0].upper() == "/PRIVATEMSG":
