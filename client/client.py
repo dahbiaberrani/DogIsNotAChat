@@ -64,17 +64,17 @@ def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     log("file transfer socket opened in file sender")
     buffer_size = 1024
     address = (receiver_ip_address, int(udp_port_number))
-
-    udp_peer_to_peer_file_send_socket.sendto(file_name, address)
+    log(address)
+    udp_peer_to_peer_file_send_socket.sendto(str.encode(file_name), address)
+    log("openning the file")
     file = open(file_name, "rb")
     data = file.read(buffer_size)
-
-    udp_peer_to_peer_file_send_socket.sendto(file_name, address)
-    udp_peer_to_peer_file_send_socket.sendto(data, address)
     while data:
-        if s.sendto(data, address):
+        log(data)
+        if udp_peer_to_peer_file_send_socket.sendto(data, address):
             print("sending file .....")
             data = file.read(buffer_size)
+
     udp_peer_to_peer_file_send_socket.close()
     file.close()
 
@@ -107,6 +107,14 @@ def receive_file_udp(sender_ip_address, udp_port_number):
         udp_peer_to_peer_file_receive_socket.close()
         print("File Downloaded")
 
+def cat_file(file_name):
+    file = open(file_name, "rb")
+    data = file.read(1024)
+    while data:
+        log(data)
+        data = file.read(1024)
+
+    file.close()
 
 def receive():
     global file_nickname_sender
@@ -168,11 +176,11 @@ def receive():
                     log("Proposed port number from file receiver is also available on sender side, starting file sending")
                     # open udp file transfer  socket
                     #TODO: move following function call to a dedicated thread to don't block other usage of the client during file transfer
+                    send_to_server("/STARTFILETRANSFER " + file_receiver_nickname + " " + client_ip_address + " " + file_receiver_porposed_port + " " + file_receiver_proposed_protocol + " " + file_name)
                     send_file_udp(file_receiver_ip_address, file_receiver_porposed_port, file_name)
                     time.sleep(1)
-                    #Informe file receiver that he can start to receive file
 
-                    send_to_server("/STARTFILETRANSFER " + file_receiver_nickname + " " + client_ip_address + " " + file_receiver_porposed_port + " " + file_receiver_proposed_protocol + " " + file_name)
+
 
 
             else:
