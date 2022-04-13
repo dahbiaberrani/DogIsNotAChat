@@ -1,6 +1,7 @@
 import socket
 import sys
 import threading
+import time
 
 log_enabled = True
 # Retreive our current client IP address
@@ -29,8 +30,9 @@ nickname = input("Choose your nickname: ")
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.connect((server_ip_address, server_port))
 
+# TODO: to clean if not needed
 file_nickname_sender = ""
-
+file_receive_folder = "received-Files"
 
 # Listening to Server and Sending Nickname
 
@@ -50,10 +52,14 @@ def is_udp_port_available(port):
     return port not in upd_ongoing_used_port
 
 
-def send_file_udp(receiver_ip_address, receiver_udp_port_number, file_name):
+def send_file_udp(sender_ip_address, udp_port_number, file_name):
+    log("in send file")
+    log("filename = " + file_name)
+    log("sender_ip_address = " + sender_ip_address)
+    log("Port number = " + udp_port_number)
     udp_peer_to_peer_file_send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     buffer_size = 1024
-    address = (receiver_ip_address, receiver_udp_port_number)
+    address = (sender_ip_address, udp_port_number)
 
     udp_peer_to_peer_file_send_socket.sendto(file_name, address)
     file = open(file_name, "rb")
@@ -69,18 +75,23 @@ def send_file_udp(receiver_ip_address, receiver_udp_port_number, file_name):
     file.close()
 
 
-def receive_file_udp(sender_ip_address, receiver_udp_port_number):
-    address = (sender_ip_address, receiver_udp_port_number)
+def receive_file_udp(sender_ip_address, udp_port_number):
+    log("in receiving file")
+    log("sender_ip_address = " + sender_ip_address)
+    log("Port number = " + udp_port_number)
+    address = ("127.0.0.1", udp_port_number)
+    log(address)
     udp_peer_to_peer_file_receive_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    log("socket opened")
     udp_peer_to_peer_file_receive_socket.bind(address)
-
+    log("socket binded")
     buffer_size = 1024
 
-    data, addr = s.recvfrom(buffer_size)
+    data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
     print("Received File:", data.strip())
-    file = open(data.strip(), 'wb')
+    file = open("./" + file_receive_folder + "/" + str(data.strip()), 'wb')
 
-    data, addr = s.recvfrom(buffer_size)
+    data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
     try:
         while data:
             print("Receiving file.....")
@@ -119,23 +130,23 @@ def receive():
             elif liste_message[0].upper() == '/STARTFILETRANSFER':
                 log("Start file transfer info received")
                 # TODO: Start debug here
-                # proposed_destination_ip_address_port_protocol = (liste_message[1], liste_message[2], liste_message[3], liste_message[4])
-                # log(proposed_destination_ip_address_port_protocol)
-                # file_transfer_ip_address = proposed_destination_ip_address_port_protocol[2]
-                # file_transfer_port = proposed_destination_ip_address_port_protocol[3]
-                # file_transfer_protocol = proposed_destination_ip_address_port_protocol[4]
-                #
-                # if file_transfer_protocol == "UDP":
-                #     log("using UDP port " + file_transfer_port + " to receive the file")
-                #     upd_ongoing_used_port.append(file_transfer_port)
-                #     # TODO: start dedicated thread to receive the file using UDP protocol
-                #     receive_file_udp()
-                # elif file_transfer_protocol == "TCP":
-                #     log("using TCP port " + file_transfer_port + " to receive the file")
-                #     tcp_ongoing_used_port.append(file_transfer_port)
-                #     # TODO: start dedicated thread to receive the file using TCP protocol
-                # else:
-                #     log("unknown proposed file transfer protocol")
+                proposed_destination_ip_address_port_protocol = (liste_message[1], liste_message[2], liste_message[3], liste_message[4])
+                log(proposed_destination_ip_address_port_protocol)
+                file_transfer_ip_address = proposed_destination_ip_address_port_protocol[1]
+                file_transfer_port = proposed_destination_ip_address_port_protocol[2]
+                file_transfer_protocol = proposed_destination_ip_address_port_protocol[3]
+
+                if file_transfer_protocol == "UDP":
+                    log("using UDP port " + file_transfer_port + " to receive the file")
+                    upd_ongoing_used_port.append(file_transfer_port)
+                    # TODO: start dedicated thread to receive the file using UDP protocol
+                    receive_file_udp(file_transfer_ip_address, file_transfer_port)
+                elif file_transfer_protocol == "TCP":
+                    log("using TCP port " + file_transfer_port + " to receive the file")
+                    tcp_ongoing_used_port.append(file_transfer_port)
+                    # TODO: start dedicated thread to receive the file using TCP protocol
+                else:
+                    log("unknown proposed file transfer protocol")
             else:
                 print(message)
         except:
@@ -171,9 +182,12 @@ def write():
                     if len(liste_user_input) != 3:
                         print("wrong or missing parameters usage: /ACCEPTFILE <sender_username>  <file_name>")
                     else:
-                        # TODO: need to control parameters check if the file realy existe
-                        send_to_server("/STARTFILETRANSFER " + liste_user_input[1] + " " + client_ip_address + " " + str(
-                            get_available_udp_port()) + " " + default_file_transfert_protocol + " " + liste_user_input[2])
+                        # TODO: need to control parameters check if the file realy existe$
+                        port = get_available_udp_port()
+                        file_name = liste_user_input[2]
+                        send_file_udp(client_ip_address, port, file_name)
+                        sys.sleep(1)
+                        send_to_server("/STARTFILETRANSFER " + liste_user_input[1] + " " + client_ip_address + " " + str(port) + " " + default_file_transfert_protocol + " " + file_name)
 
                 else:
                     send_to_server(user_input)
