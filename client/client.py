@@ -116,6 +116,26 @@ def receive():
                 log("send file command received")
                 file_nickname_sender = liste_message[2]
                 print("user " + file_nickname_sender + " asks to send " + liste_message[7] + " /ACCEPTFILE or /DENYFILE : ")
+            elif liste_message[0].upper() == '/STARTFILETRANSFER':
+                log("Start file transfer info received")
+                # TODO: Start debug here
+                # proposed_destination_ip_address_port_protocol = (liste_message[1], liste_message[2], liste_message[3], liste_message[4])
+                # log(proposed_destination_ip_address_port_protocol)
+                # file_transfer_ip_address = proposed_destination_ip_address_port_protocol[2]
+                # file_transfer_port = proposed_destination_ip_address_port_protocol[3]
+                # file_transfer_protocol = proposed_destination_ip_address_port_protocol[4]
+                #
+                # if file_transfer_protocol == "UDP":
+                #     log("using UDP port " + file_transfer_port + " to receive the file")
+                #     upd_ongoing_used_port.append(file_transfer_port)
+                #     # TODO: start dedicated thread to receive the file using UDP protocol
+                #     receive_file_udp()
+                # elif file_transfer_protocol == "TCP":
+                #     log("using TCP port " + file_transfer_port + " to receive the file")
+                #     tcp_ongoing_used_port.append(file_transfer_port)
+                #     # TODO: start dedicated thread to receive the file using TCP protocol
+                # else:
+                #     log("unknown proposed file transfer protocol")
             else:
                 print(message)
         except:
@@ -152,29 +172,9 @@ def write():
                         print("wrong or missing parameters usage: /ACCEPTFILE <sender_username>  <file_name>")
                     else:
                         # TODO: need to control parameters check if the file realy existe
-                        send_to_server(liste_user_input[0] + " " + liste_user_input[1] + " " + client_ip_address + " " + str(
+                        send_to_server("/STARTFILETRANSFER " + liste_user_input[1] + " " + client_ip_address + " " + str(
                             get_available_udp_port()) + " " + default_file_transfert_protocol + " " + liste_user_input[2])
-                # elif liste_message[0].upper() == '/STARTFILETRANSFER':
-                #     log("Start file transfer info received")
-                #     #TODO: Start debug here
-                #     proposed_destination_ip_address_port_protocol = (liste_message[1], liste_message[2], liste_message[3], liste_message[4])
-                #     log(proposed_destination_ip_address_port_protocol)
-                #     file_transfer_ip_address = proposed_destination_ip_address_port_protocol[2]
-                #     file_transfer_port = proposed_destination_ip_address_port_protocol[3]
-                #     file_transfer_protocol = proposed_destination_ip_address_port_protocol[4]
-                #
-                #     if file_transfer_protocol == "UDP":
-                #         log("using UDP port " + file_transfer_port + " to receive the file")
-                #         upd_ongoing_used_port.append(file_transfer_port)
-                #         # TODO: start dedicated thread to receive the file using UDP protocol
-                #         receive_file_udp()
-                #     elif file_transfer_protocol == "TCP":
-                #         log("using TCP port " + file_transfer_port + " to receive the file")
-                #         tcp_ongoing_used_port.append(file_transfer_port)
-                #         # TODO: start dedicated thread to receive the file using TCP protocol
-                #     else:
-                #         log("unknown proposed file transfer protocol")
-                
+
                 else:
                     send_to_server(user_input)
             else:

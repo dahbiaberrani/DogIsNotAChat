@@ -180,11 +180,12 @@ def handle(client):
                     client.send("fail: an argument is needed for this command".encode('UTF8'))
                 else:
                     log("sending /STARTFILETRANSFER")
-                    # clients_key_list = list(clients.keys())
-                    # clients_val_list = list(clients.values())
-                    # file_nickname_sender = liste_user_message[1]
-                    # file_client_receiver = clients[file_nickname_sender]
-                    # file_client_receiver.send(message.encode('UTF8'))
+                    clients_key_list = list(clients.keys())
+                    clients_val_list = list(clients.values())
+                    file_nickname_sender = liste_user_message[1]
+                    file_nickname_receiver = clients_key_list[clients_val_list.index(client)]
+                    file_client_receiver = clients[file_nickname_receiver]
+                    file_client_receiver.send(("/STARTFILETRANSFER " + file_nickname_sender + " " + liste_user_message[2] + " " + liste_user_message[3] + " " + liste_user_message[4] + " " + liste_user_message[5]).encode('UTF8'))
 
             elif message.upper() == "/PRIVATEMSG" or liste_user_message[0].upper() == "/PRIVATEMSG":
                 log("privatemsg recieved")
