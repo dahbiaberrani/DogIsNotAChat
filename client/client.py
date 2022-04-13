@@ -55,14 +55,15 @@ def is_udp_port_available(port):
     return port not in upd_ongoing_used_port
 
 
-def send_file_udp(sender_ip_address, udp_port_number, file_name):
+def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     log("in send file")
     log("filename = " + file_name)
-    log("sender_ip_address = " + sender_ip_address)
+    log("receiver_ip_address = " + receiver_ip_address)
     log("Port number = " + udp_port_number)
     udp_peer_to_peer_file_send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    log("file transfer socket opened in file sender")
     buffer_size = 1024
-    address = (sender_ip_address, udp_port_number)
+    address = (receiver_ip_address, int(udp_port_number))
 
     udp_peer_to_peer_file_send_socket.sendto(file_name, address)
     file = open(file_name, "rb")
@@ -167,7 +168,7 @@ def receive():
                     log("Proposed port number from file receiver is also available on sender side, starting file sending")
                     # open udp file transfer  socket
                     #TODO: move following function call to a dedicated thread to don't block other usage of the client during file transfer
-                    send_file_udp(client_ip_address, file_receiver_porposed_port, liste_message[4])
+                    send_file_udp(file_receiver_ip_address, file_receiver_porposed_port, file_name)
                     time.sleep(1)
                     #Informe file receiver that he can start to receive file
 
