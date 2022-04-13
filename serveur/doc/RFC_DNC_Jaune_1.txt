@@ -345,8 +345,9 @@ Yellow Team                               Standards Track                       
 RFC 11111                                      DNC                                    February 2022
 
 	Description: The user chooses to accept the file sent by another user
-        
-	/ACCEPTFILE <username> <file storage path> <port>
+       # TODO: we need to specify USP or TCP protocol to be used for file transfert
+	/ACCEPTFILE <username> <file storage path> <ip_address> <port>
+	#TODO: redefine this command description (add IP address of the receiver)
 
 	Arguments: username -REQUIRED,file storage path -REQUIRED, port  -REQUIRED
 

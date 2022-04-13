@@ -1,3 +1,11 @@
+#TODO: do real file transfert using udp socket client to client peer to peer
+#TODO: Log into file in server side
+#TODO: READ RFC from cofiguration file
+#TODO: READ server parameters and connection information from a configuration file
+#TODO: Debug Quit command
+#TODO: GUI
+#TODO: Add user documentation
+#TODO: Add presentation materials (slides)
 /sendfile dahbia 127.0.0.1 file.txt
 /privatemsg dahbia
 
