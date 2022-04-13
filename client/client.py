@@ -3,16 +3,19 @@ import sys
 import threading
 import time
 
+# Server parameters
+# TODO read server connection inforamtion from a configuration file (json format for example)
+server_ip_address = "192.168.0.48"
+server_port = 8080
+
 log_enabled = True
-# Retreive our current client IP address
+# Retreive our server IP address
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 client_ip_address = s.getsockname()[0]
 print("Client IP address " + client_ip_address)
 s.close()
-# TODO read server connection inforamtion from a configuration file (json format for example)
-server_ip_address = "127.0.0.1"
-server_port = 8080
+
 file_transfert_udp_ports_start = 2000
 file_transfert_udp_ports_end = 60000
 # Gestion des threads
@@ -79,7 +82,7 @@ def receive_file_udp(sender_ip_address, udp_port_number):
     log("in receiving file")
     log("sender_ip_address = " + sender_ip_address)
     log("Port number = " + udp_port_number)
-    address = ("127.0.0.1", udp_port_number)
+    address = (sender_ip_address, udp_port_number)
     log(address)
     udp_peer_to_peer_file_receive_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     log("socket opened")
@@ -147,6 +150,30 @@ def receive():
                     # TODO: start dedicated thread to receive the file using TCP protocol
                 else:
                     log("unknown proposed file transfer protocol")
+            elif liste_message[0].upper() == "/ACCEPTFILE":
+                log("/ACCEPTFILE command received")
+                # retrieve port number and file name
+                file_receiver_nickname = liste_message[1]
+                file_receiver_ip_address = liste_message[2]
+                file_receiver_porposed_port = liste_message[3]
+                file_receiver_proposed_protocol = liste_message[4]
+                file_name = liste_message[5]
+
+                # check if proposed port is available
+                # TODO: check which protocol is being to be used, here we assume only UDP is used
+                if not is_udp_port_available(int(file_receiver_porposed_port)):
+                    log(file_receiver_porposed_port + " is not available on file sender side")
+                else:
+                    log("Proposed port number from file receiver is also available on sender side, starting file sending")
+                    # open udp file transfer  socket
+                    #TODO: move following function call to a dedicated thread to don't block other usage of the client during file transfer
+                    send_file_udp(client_ip_address, file_receiver_porposed_port, liste_message[4])
+                    time.sleep(1)
+                    #Informe file receiver that he can start to receive file
+
+                    send_to_server("/STARTFILETRANSFER " + file_receiver_nickname + " " + client_ip_address + " " + file_receiver_porposed_port + " " + file_receiver_proposed_protocol + " " + file_name)
+
+
             else:
                 print(message)
         except:
@@ -182,12 +209,11 @@ def write():
                     if len(liste_user_input) != 3:
                         print("wrong or missing parameters usage: /ACCEPTFILE <sender_username>  <file_name>")
                     else:
-                        # TODO: need to control parameters check if the file realy existe$
+                        # TODO: need to control parameters check if the file realy existe
                         port = get_available_udp_port()
                         file_name = liste_user_input[2]
-                        send_file_udp(client_ip_address, port, file_name)
-                        sys.sleep(1)
-                        send_to_server("/STARTFILETRANSFER " + liste_user_input[1] + " " + client_ip_address + " " + str(port) + " " + default_file_transfert_protocol + " " + file_name)
+                        # TODO: to move send_file_udp(client_ip_address, port, file_name)
+                        send_to_server("/ACCEPTFILE " + liste_user_input[1] + " " + client_ip_address + " " + str(port) + " " + default_file_transfert_protocol + " " + file_name)
 
                 else:
                     send_to_server(user_input)

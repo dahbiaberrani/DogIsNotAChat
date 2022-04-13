@@ -5,7 +5,14 @@ import os
 log_enabled = True
 #Todo read server information from a configuration file
 # Informations de connexion
-host = '127.0.0.1'
+
+# Retreive our current client IP address
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(("8.8.8.8", 80))
+server_ip_address = s.getsockname()[0]
+print("Server IP address " + server_ip_address)
+s.close()
+host = server_ip_address
 port = 8080
 
 # Starting Server
@@ -146,7 +153,7 @@ def handle(client):
 
 
             elif liste_user_message[0].upper() == "/ACCEPTFILE":
-                log("File transfert accepted received")
+                log("File transfer accepted received")
                 if len(liste_user_message) != 6:
                     client.send("fail: an argument is needed for this command".encode('UTF8'))
                 else:
@@ -368,5 +375,5 @@ def receive():
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
-print("server listening to client connect on port " + str(port))
+print("server IP address: " + server_ip_address + " is listening to client connect on port " + str(port))
 receive()
