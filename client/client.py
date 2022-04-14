@@ -83,7 +83,7 @@ def receive_file_udp(sender_ip_address, udp_port_number):
     log("in receiving file")
     log("sender_ip_address = " + sender_ip_address)
     log("Port number = " + udp_port_number)
-    address = (sender_ip_address, udp_port_number)
+    address = ("0.0.0.0", int(udp_port_number))
     log(address)
     udp_peer_to_peer_file_receive_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     log("socket opened")
@@ -101,20 +101,13 @@ def receive_file_udp(sender_ip_address, udp_port_number):
             print("Receiving file.....")
             file.write(data)
             udp_peer_to_peer_file_receive_socket.settimeout(2)
-            data, addr = s.recvfrom(buffer_size)
+            data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
     except socket.timeout:
         file.close()
         udp_peer_to_peer_file_receive_socket.close()
         print("File Downloaded")
 
-def cat_file(file_name):
-    file = open(file_name, "rb")
-    data = file.read(1024)
-    while data:
-        log(data)
-        data = file.read(1024)
 
-    file.close()
 
 def receive():
     global file_nickname_sender
