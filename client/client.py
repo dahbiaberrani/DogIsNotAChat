@@ -62,7 +62,7 @@ def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     log("Port number = " + udp_port_number)
     udp_peer_to_peer_file_send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     log("file transfer socket opened in file sender")
-    buffer_size = 1024
+    buffer_size = 1
     address = (receiver_ip_address, int(udp_port_number))
     log(address)
     # udp_peer_to_peer_file_send_socket.sendto(str.encode(file_name), address)
@@ -79,7 +79,7 @@ def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     print("file sent")
 
     time.sleep(5)
-    # udp_peer_to_peer_file_send_socket.close()
+    udp_peer_to_peer_file_send_socket.close()
     file.close()
 
 
@@ -93,7 +93,7 @@ def receive_file_udp(sender_ip_address, udp_port_number):
     log("socket opened")
     udp_peer_to_peer_file_receive_socket.bind(address)
     log("socket binded")
-    buffer_size = 1024
+    buffer_size = 1
 
     #data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
     # log(addr)
@@ -110,12 +110,12 @@ def receive_file_udp(sender_ip_address, udp_port_number):
             file.write(data)
             udp_peer_to_peer_file_receive_socket.settimeout(5)
             data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
-            log("address = " + addr)
+            log("address = " + str(addr))
             log("buffer num: " + str(i))
             i += 1
     except socket.timeout:
         file.close()
-        # udp_peer_to_peer_file_receive_socket.close()
+        udp_peer_to_peer_file_receive_socket.close()
         print("File Downloaded")
 
 
@@ -156,7 +156,9 @@ def receive():
                     log("using UDP port " + file_transfer_port + " to receive the file")
                     upd_ongoing_used_port.append(file_transfer_port)
                     # TODO: start dedicated thread to receive the file using UDP protocol
-                    receive_file_udp(file_transfer_ip_address, file_transfer_port)
+                    file_receive_thread = threading.Thread(target=receive_file_udp, args=(file_transfer_ip_address, file_transfer_port))
+                    file_receive_thread.start()
+                    # receive_file_udp(file_transfer_ip_address, file_transfer_port)
                 elif file_transfer_protocol == "TCP":
                     log("using TCP port " + file_transfer_port + " to receive the file")
                     tcp_ongoing_used_port.append(file_transfer_port)
@@ -180,8 +182,11 @@ def receive():
                     log("Proposed port number from file receiver is also available on sender side, starting file sending")
                     # open udp file transfer  socket
                     #TODO: move following function call to a dedicated thread to don't block other usage of the client during file transfer
+                    file_send_thread = threading.Thread(target=send_file_udp, args=(file_receiver_ip_address, file_receiver_porposed_port, file_name))
+                    file_send_thread.start()
+                    # send_file_udp(file_receiver_ip_address, file_receiver_porposed_port, file_name)
                     send_to_server("/STARTFILETRANSFER " + file_receiver_nickname + " " + client_ip_address + " " + file_receiver_porposed_port + " " + file_receiver_proposed_protocol + " " + file_name)
-                    send_file_udp(file_receiver_ip_address, file_receiver_porposed_port, file_name)
+
 
 
 
