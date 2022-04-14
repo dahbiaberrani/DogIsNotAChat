@@ -16,3 +16,14 @@
 /PM dahbia hello
 /privatemsg dahbia
 /PM dahbia hello
+
+
+# SENDFILE test
+Connect a client with dahbia
+connect a second client with nico
+
+nico:
+/sendfile dahbia file.txt
+
+dahbia:
+/acceptfile nico file.txt
