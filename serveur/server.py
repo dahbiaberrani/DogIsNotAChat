@@ -13,7 +13,7 @@ server_ip_address = s.getsockname()[0]
 print("Server IP address " + server_ip_address)
 s.close()
 host = server_ip_address
-port = 8080
+port = 9001
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

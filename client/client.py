@@ -6,7 +6,7 @@ import time
 # Server parameters
 # TODO read server connection inforamtion from a configuration file (json format for example)
 server_ip_address = "192.168.0.48"
-server_port = 8080
+server_port = 9001
 
 log_enabled = True
 # Retreive our server IP address
@@ -62,10 +62,11 @@ def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     log("Port number = " + udp_port_number)
     udp_peer_to_peer_file_send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     log("file transfer socket opened in file sender")
-    buffer_size = 1
+    buffer_size = 1024
     address = (receiver_ip_address, int(udp_port_number))
     log(address)
     # udp_peer_to_peer_file_send_socket.sendto(str.encode(file_name), address)
+    time.sleep(5)
     log("openning the file")
     file = open(file_name, "rb")
     data = file.read(buffer_size)
@@ -93,7 +94,7 @@ def receive_file_udp(sender_ip_address, udp_port_number):
     log("socket opened")
     udp_peer_to_peer_file_receive_socket.bind(address)
     log("socket binded")
-    buffer_size = 1
+    buffer_size = 1024
 
     #data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
     # log(addr)
@@ -132,8 +133,8 @@ def receive():
             # If 'NICK' Send Nickname
             message = server.recv(1024).decode('UTF8')
             liste_message = message.split(' ')
-            log(liste_message)
-            log(liste_message[0])
+            # log(liste_message)
+            # log(liste_message[0])
             if message == '/NICK':
                 server.send(nickname.encode('UTF8'))
             elif message == "/QUIT":
@@ -187,11 +188,6 @@ def receive():
                     # send_file_udp(file_receiver_ip_address, file_receiver_porposed_port, file_name)
                     send_to_server("/STARTFILETRANSFER " + file_receiver_nickname + " " + client_ip_address + " " + file_receiver_porposed_port + " " + file_receiver_proposed_protocol + " " + file_name)
 
-
-
-
-
-
             else:
                 print(message)
         except:
@@ -212,7 +208,7 @@ def write():
         try:
             user_input = input()
             liste_user_input = user_input.split(' ')
-            log(liste_user_input)
+            # log(liste_user_input)
             if user_input.startswith('/'):
                 if user_input.upper() == "/QUIT":
                     quit()
@@ -236,8 +232,8 @@ def write():
                 else:
                     send_to_server(user_input)
             else:
-                message = '{}: {}'.format(nickname, user_input)
-                send_to_server(message)
+                # message = '{}: {}'.format(nickname, user_input)
+                send_to_server(user_input)
         except:
             # Close Connection When Error
             print("An error occured!")
