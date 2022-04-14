@@ -1,3 +1,4 @@
+import os
 import socket
 import sys
 import threading
@@ -84,7 +85,7 @@ def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     file.close()
 
 
-def receive_file_udp(sender_ip_address, udp_port_number):
+def receive_file_udp(sender_ip_address, udp_port_number, file_name):
     log("in receiving file")
     log("sender_ip_address = " + sender_ip_address)
     log("Port number = " + udp_port_number)
@@ -100,7 +101,7 @@ def receive_file_udp(sender_ip_address, udp_port_number):
     # log(addr)
     # print("Received File:", str(data.strip()))
     print("Received File:", "received_file.txt")
-    file = open("received_file.txt", 'wb')
+    file = open("./" + file_receive_folder + "/" + file_name, 'wb')
     log("file opened in write mode")
     data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
     log(addr)
@@ -147,19 +148,19 @@ def receive():
             elif liste_message[0].upper() == '/STARTFILETRANSFER':
                 log("Start file transfer info received")
                 # TODO: Start debug here
-                proposed_destination_ip_address_port_protocol = (liste_message[1], liste_message[2], liste_message[3], liste_message[4])
+                proposed_destination_ip_address_port_protocol = (liste_message[1], liste_message[2], liste_message[3], liste_message[4], liste_message[5])
                 log(proposed_destination_ip_address_port_protocol)
                 file_transfer_ip_address = proposed_destination_ip_address_port_protocol[1]
                 file_transfer_port = proposed_destination_ip_address_port_protocol[2]
                 file_transfer_protocol = proposed_destination_ip_address_port_protocol[3]
+                file_name = proposed_destination_ip_address_port_protocol[4]
 
                 if file_transfer_protocol == "UDP":
                     log("using UDP port " + file_transfer_port + " to receive the file")
                     upd_ongoing_used_port.append(file_transfer_port)
-                    # TODO: start dedicated thread to receive the file using UDP protocol
-                    file_receive_thread = threading.Thread(target=receive_file_udp, args=(file_transfer_ip_address, file_transfer_port))
+                    file_receive_thread = threading.Thread(target=receive_file_udp, args=(file_transfer_ip_address, file_transfer_port, file_name))
                     file_receive_thread.start()
-                    # receive_file_udp(file_transfer_ip_address, file_transfer_port)
+
                 elif file_transfer_protocol == "TCP":
                     log("using TCP port " + file_transfer_port + " to receive the file")
                     tcp_ongoing_used_port.append(file_transfer_port)
@@ -218,7 +219,10 @@ def write():
                     if len(liste_user_input) != 3:
                         print("Wrong or missing parameters, usage: /SENDFILE <username> <file_name>")
                     else:
-                        send_to_server(liste_user_input[0] + " " + liste_user_input[1] + " " + client_ip_address + " " + liste_user_input[2])
+                        if not os.path.exists(liste_user_input[2]):
+                            log("file does not exist, please choose another file")
+                        else:
+                            send_to_server(liste_user_input[0] + " " + liste_user_input[1] + " " + client_ip_address + " " + liste_user_input[2])
                 elif liste_user_input[0].upper() == "/ACCEPTFILE":
                     if len(liste_user_input) != 3:
                         print("wrong or missing parameters usage: /ACCEPTFILE <sender_username>  <file_name>")

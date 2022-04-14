@@ -103,9 +103,7 @@ def handle(client):
                 elif liste_user_message[1] not in clients.keys():
                     log("user not found")
                     client.send(("-fail 110 : user " + liste_user_message[1] + " not found").encode('UTF8'))
-                elif not os.path.exists(liste_user_message[3]):
-                    log("file does not exist")
-                    client.send("-fail 202 : path not found, canceling".encode('UTF8'))
+
                 # elif liste_user_message[2] != host:
                 #
                 #     log("ip adress not found")
