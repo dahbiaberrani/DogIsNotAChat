@@ -98,10 +98,19 @@ def handle(client):
                 client.send(('HELP, QUIT, AFK, WAKE, LIST, NAME, PRIVATEMSG, ACCEPTPRIVATEMSG, DENYPRIVATEMSG, SENDFILE, ACCEPTFILE, DENYFILE').encode('UTF8'))
             elif message.upper() == "/QUIT":
                 log("/Quit command received")
+                # remove client from dictionnary
+                clients_key_list = list(clients.keys())
+                log(clients_key_list)
+                clients_val_list = list(clients.values())
+                log(len(clients_val_list))
+                # client_key = clients_key_list[clients_val_list.index(client)]
+
                 client.send("+success: you are successfully logged out".encode("UTF8"))
-                client.send("/QUIT".encode("UTF8"))
+                # client.send("/QUIT".encode("UTF8"))
+                # close client socket
                 close_client(client)
-                broadcast("-‘username’ logged out")
+                #broadcast("-‘username’ logged out")
+
                 break
 
             elif liste_user_message[0].upper() == "/SENDFILE":
@@ -349,11 +358,13 @@ def handle(client):
             break
 def close_client(client):
     global clients
+    global connected_users
     #TODO need to properly stop correpsponding thread
     # Removing And Closing Clients
     client.send("/QUIT".encode("UTF8"))
     key = get_username(client)
     del clients[key]
+    connected_users.remove(client)
     broadcast('{} left!'.format(key).encode('UTF8'))
 
 
