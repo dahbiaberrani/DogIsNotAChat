@@ -65,16 +65,21 @@ def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     buffer_size = 1024
     address = (receiver_ip_address, int(udp_port_number))
     log(address)
-    udp_peer_to_peer_file_send_socket.sendto(str.encode(file_name), address)
+    # udp_peer_to_peer_file_send_socket.sendto(str.encode(file_name), address)
     log("openning the file")
     file = open(file_name, "rb")
     data = file.read(buffer_size)
+    i = 0
     while data:
+        log("buffer num: " + str(i) + " data = " + str(data))
+        i += 1
         if udp_peer_to_peer_file_send_socket.sendto(data, address):
-            print("sending file .....")
+            print("sending file")
             data = file.read(buffer_size)
+    print("file sent")
 
-    udp_peer_to_peer_file_send_socket.close()
+    time.sleep(5)
+    # udp_peer_to_peer_file_send_socket.close()
     file.close()
 
 
@@ -90,20 +95,27 @@ def receive_file_udp(sender_ip_address, udp_port_number):
     log("socket binded")
     buffer_size = 1024
 
+    #data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
+    # log(addr)
+    # print("Received File:", str(data.strip()))
+    print("Received File:", "received_file.txt")
+    file = open("received_file.txt", 'wb')
+    log("file opened in write mode")
     data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
-    print("Received File:", str(data.strip()))
-    file = open("./" + file_receive_folder + "/" + str(data.strip()), 'wb')
-
-    data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
+    log(addr)
     try:
+        i = 0
         while data:
-            print("Receiving file.....")
+            print("Receiving file")
             file.write(data)
-            udp_peer_to_peer_file_receive_socket.settimeout(2)
+            udp_peer_to_peer_file_receive_socket.settimeout(5)
             data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
+            log("address = " + addr)
+            log("buffer num: " + str(i))
+            i += 1
     except socket.timeout:
         file.close()
-        udp_peer_to_peer_file_receive_socket.close()
+        # udp_peer_to_peer_file_receive_socket.close()
         print("File Downloaded")
 
 
@@ -170,7 +182,7 @@ def receive():
                     #TODO: move following function call to a dedicated thread to don't block other usage of the client during file transfer
                     send_to_server("/STARTFILETRANSFER " + file_receiver_nickname + " " + client_ip_address + " " + file_receiver_porposed_port + " " + file_receiver_proposed_protocol + " " + file_name)
                     send_file_udp(file_receiver_ip_address, file_receiver_porposed_port, file_name)
-                    time.sleep(1)
+
 
 
 
