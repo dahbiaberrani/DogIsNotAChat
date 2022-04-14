@@ -70,7 +70,6 @@ def send_file_udp(receiver_ip_address, udp_port_number, file_name):
     file = open(file_name, "rb")
     data = file.read(buffer_size)
     while data:
-        log(data)
         if udp_peer_to_peer_file_send_socket.sendto(data, address):
             print("sending file .....")
             data = file.read(buffer_size)
@@ -92,7 +91,7 @@ def receive_file_udp(sender_ip_address, udp_port_number):
     buffer_size = 1024
 
     data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
-    print("Received File:", data.strip())
+    print("Received File:", str(data.strip()))
     file = open("./" + file_receive_folder + "/" + str(data.strip()), 'wb')
 
     data, addr = udp_peer_to_peer_file_receive_socket.recvfrom(buffer_size)
