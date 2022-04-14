@@ -1,5 +1,6 @@
 import socket
 import threading
+import  json
 import os
 
 log_enabled = True
@@ -13,8 +14,14 @@ server_ip_address = s.getsockname()[0]
 print("Server IP address " + server_ip_address)
 s.close()
 host = server_ip_address
-port = 9001
 
+with open("../settings/settings.json") as settings_json_file:
+    settings_values = json.load(settings_json_file)
+
+    port = settings_values["serverConnexionPortNumber"]
+    server_log_file_name = settings_values["serverLogFileName"]
+
+log_file = open(server_log_file_name, 'w')
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
@@ -46,7 +53,8 @@ def get_username(myclient):
 
 # fonction pour les logs
 def log(log_message):
-    # TODO: log in file also
+    # TODO: add time stamp
+    log_file.write(log_message)
     if log_enabled:
         print(log_message)
 
@@ -274,7 +282,7 @@ def handle(client):
                 log("Private Message received ")
                 clients_key_list = list(clients.keys())
                 clients_val_list = list(clients.values())
-                if len(liste_user_message) != 3:
+                if len(liste_user_message) < 3:
                     log("Argument missing for /PM command")
                     client.send("-fail 1: an argument is needed for this command".encode('UTF8'))
                # Destination client doesn't exist in connecetd clients
@@ -291,12 +299,15 @@ def handle(client):
                     log("private message initiator : " + private_message_sender_nickname)
                     log("private message destination : " + private_message_receiver_nickname)
                    # No established private chat with destination client
-                    if (private_message_sender_nickname, private_message_receiver_nickname) not in approved_private_messaging_list:
+                    if ((private_message_sender_nickname, private_message_receiver_nickname) not in approved_private_messaging_list) and ((private_message_receiver_nickname, private_message_sender_nickname) not in approved_private_messaging_list):
                         log("you don't have a private chat with this user")
                         client.send("-fail:302: you are not in a private chat with this user".encode('UTF8'))
 
                     else:
-                        private_message_receiver_client.send(("/PM " + private_message_sender_nickname + " " + liste_user_message[2]).encode('UTF8'))
+                        message_to_receiver = "/PM " + private_message_sender_nickname + " "
+                        for word in liste_user_message[2:len(liste_user_message)]:
+                            message_to_receiver = message_to_receiver + " " + word
+                        private_message_receiver_client.send(message_to_receiver.encode('UTF8'))
                         client.send(("+success: message successfully sent to " + private_message_receiver_nickname).encode('UTF8'))
 
             elif liste_user_message[0].upper() == "/NAME":

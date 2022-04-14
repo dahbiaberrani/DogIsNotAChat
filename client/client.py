@@ -12,8 +12,6 @@ with open("../settings/settings.json") as settings_json_file:
     server_ip_address = settings_values["serverIPAddress"]
     server_port = settings_values["serverConnexionPortNumber"]
     file_receive_folder = settings_values["receivedFilesDestinationFolder"]
-# server_ip_address = "192.168.0.48"
-# server_port = 9001
 
 log_enabled = True
 # Retreive our server IP address
