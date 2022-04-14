@@ -3,11 +3,17 @@ import socket
 import sys
 import threading
 import time
+import json
 
 # Server parameters
-# TODO read server connection inforamtion from a configuration file (json format for example)
-server_ip_address = "192.168.0.48"
-server_port = 9001
+# TODO read server connection inforamtion from a configuration file
+with open("../settings/settings.json") as settings_json_file:
+    settings_values = json.load(settings_json_file)
+    server_ip_address = settings_values["serverIPAddress"]
+    server_port = settings_values["serverConnexionPortNumber"]
+    file_receive_folder = settings_values["receivedFilesDestinationFolder"]
+# server_ip_address = "192.168.0.48"
+# server_port = 9001
 
 log_enabled = True
 # Retreive our server IP address
@@ -36,7 +42,7 @@ server.connect((server_ip_address, server_port))
 
 # TODO: to clean if not needed
 file_nickname_sender = ""
-file_receive_folder = "received-Files"
+
 
 # Listening to Server and Sending Nickname
 

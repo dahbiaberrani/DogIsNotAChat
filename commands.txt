@@ -6,7 +6,7 @@
 #TODO: GUI
 #TODO: Add user documentation
 #TODO: Add presentation materials (slides)
-/sendfile dahbia 127.0.0.1 file.txt
+
 /privatemsg dahbia
 
 #/PM message tests
@@ -23,7 +23,7 @@ Connect a client with dahbia
 connect a second client with nico
 
 nico:
-/sendfile dahbia file.txt
+/sendfile dahbia file.txt (ou celine.mp3)
 
 dahbia:
-/acceptfile nico file.txt
+/acceptfile nico file.txt (ou celine.mp3)
