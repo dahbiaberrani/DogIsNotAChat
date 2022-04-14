@@ -102,7 +102,7 @@ def handle(client):
                     client.send("-fail 1: an argument is needed for this command".encode('UTF8'))
                 elif liste_user_message[1] not in clients.keys():
                     log("user not found")
-                    client.send(("-fail 110 : user " + liste_user_message[1] + " not found").encode('UTF8'))
+                    client.send(("-fail user " + liste_user_message[1] + " not found").encode('UTF8'))
 
                 # elif liste_user_message[2] != host:
                 #
