@@ -133,6 +133,7 @@ def receive():
     global upd_ongoing_used_port
     global tcp_ongoing_used_port
     while receive_thread_running:
+        log("Rreceiving : " + str(receive_thread_running))
         try:
             # Receive Message From Server
             # If 'NICK' Send Nickname
@@ -142,9 +143,11 @@ def receive():
             # log(liste_message[0])
             if message == '/NICK':
                 server.send(nickname.encode('UTF8'))
-            elif message == "/QUIT":
-                quit()
-                break
+            elif message.upper() == "/QUIT":
+                log("/QUIT command confirmed from server")
+                receive_thread_running = False
+                # quit()
+                # break
             elif liste_message[0].upper() == '/SENDFILE':
                 log("send file command received")
                 file_nickname_sender = liste_message[2]
@@ -198,9 +201,7 @@ def receive():
         except:
             # Close Connection When Error
             print("An error occured!")
-            sending_thread_running = False
-            receive_thread_running = False
-            server.close()
+            quit()
             break
 
 
@@ -210,14 +211,15 @@ def write():
     global receive_thread_running
     global default_file_transfert_protocol
     while sending_thread_running:
+        log("sending: " + str(sending_thread_running))
         try:
             user_input = input()
             liste_user_input = user_input.split(' ')
             # log(liste_user_input)
             if user_input.startswith('/'):
                 if user_input.upper() == "/QUIT":
-                    quit()
-                    break
+                    send_to_server("/QUIT")
+                    sending_thread_running = False
                     # TODO: To reorder and simplify the code
                 elif liste_user_input[0].upper() == "/SENDFILE":
                     if len(liste_user_input) != 3:
@@ -245,8 +247,7 @@ def write():
         except:
             # Close Connection When Error
             print("An error occured!")
-            receive_thread_running = False
-            sending_thread_running = False
+            quit()
             break
 
 
@@ -255,6 +256,7 @@ def quit():
     global receive_thread_running
     sending_thread_running = False
     receive_thread_running = False
+
 
 
 def send_to_server(message):
@@ -268,7 +270,9 @@ receive_thread.start()
 write_thread = threading.Thread(target=write)
 write_thread.start()
 
+
 write_thread.join()
 receive_thread.join()
+print("Stopping Client")
 server.close()
 sys.exit()
