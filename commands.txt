@@ -1,29 +1,20 @@
-#TODO: do real file transfert using udp socket client to client peer to peer
-#TODO: Log into file in server side
-#TODO: READ RFC from cofiguration file
-#TODO: READ server parameters and connection information from a configuration file
-#TODO: Debug Quit command
-#TODO: GUI
-#TODO: Add user documentation
-#TODO: Add presentation materials (slides)
 
 /privatemsg dahbia
+/acceptprivatemessage ikram
 
-#/PM message tests
-/PM
-/PM dahbia
+/PM ikram nous sommes en privé ici
 /PM toto hello
 /PM dahbia hello
 /privatemsg dahbia
 /PM dahbia hello
-
-
+/pm ikram salut1 salut2 salut3 salut4 salut5 ...etc
+/pm dahbia salut1 salut2 salut3 salut4 salut5 ...etc
 # SENDFILE test
 Connect a client with dahbia
-connect a second client with nico
+connect a second client with ikram
 
 nico:
 /sendfile dahbia file.txt (ou celine.mp3)
 
 dahbia:
-/acceptfile nico file.txt (ou celine.mp3)
+/acceptfile ikram file.txt (ou celine.mp3)
